@@ -1,0 +1,21 @@
+[
+    {
+      "id": 1,
+      "title": "POP",
+      "artist": "",
+      "cover": "https://api.deezer.com/artist/56398/image"
+    },
+    {
+      "id": 2,
+      "title": "Alternative rock",
+      "artist": "",
+      "cover": "https://cdn-images.dzcdn.net/images/cover/1a0562f75c4ea8a18718faebba0c9d2b/250x250-000000-80-0-0.jpg"
+    },
+    {
+      "id": 3,
+      "title": "Piano",
+      "artist": "relaxation",
+      "cover": "https://api.deezer.com/artist/1182726/image"
+    }
+  ]
+  

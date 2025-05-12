@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Альбом | PlayPod</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .track {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .track-info {
+      display: flex;
+      align-items: center;
+    }
+    .track-info img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      margin-right: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎶 Треки из альбома</h1>
+  <script>
+    function getFavorites() {
+      return JSON.parse(localStorage.getItem("deezerFavorites") || "[]");
+    }
+  
+    function saveFavorites(favs) {
+      localStorage.setItem("deezerFavorites", JSON.stringify(favs));
+    }
+  
+    function toggleFavorite(track) {
+      const favs = getFavorites();
+      const exists = favs.find(t => t.id === track.id);
+      let updated;
+      if (exists) {
+        updated = favs.filter(t => t.id !== track.id);
+      } else {
+        updated = [...favs, track];
+      }
+      saveFavorites(updated);
+      showFavorites();
+    }
+  
+    function isFavorite(id) {
+      return getFavorites().some(t => t.id === id);
+    }
+  
+    async function searchSongs() {
+      const query = document.getElementById("searchInput").value;
+      if (!query) return;
+  
+      const res = await fetch(`/deezer/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+  
+      const container = document.getElementById("search-results");
+      container.innerHTML = "";
+  
+      data.data.forEach(track => {
+        const div = document.createElement("div");
+        const fav = isFavorite(track.id);
+        div.style.marginBottom = "15px";
+        div.innerHTML = `
+          <img src="${track.album.cover_medium}" width="100" style="vertical-align:middle; border-radius:8px;" />
+          <strong style="margin-left:10px;">${track.title}</strong> — ${track.artist.name}
+          <button onclick='toggleFavorite(${JSON.stringify(track)})' style="margin-left:10px;">${fav ? "❤️" : "🤍"}</button><br/>
+          <audio controls src="${track.preview}" style="margin-top:5px;"></audio>
+          <hr/>
+        `;
+        container.appendChild(div);
+      });
+    }
+  
+    function showFavorites() {
+      const favs = getFavorites();
+      const container = document.getElementById("favorites");
+      container.innerHTML = "";
+  
+      favs.forEach(track => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <img src="${track.album.cover_medium}" width="80" style="vertical-align:middle; border-radius:8px;" />
+          <strong style="margin-left:10px;">${track.title}</strong> — ${track.artist.name}<br/>
+          <audio controls src="${track.preview}" style="margin-top:5px;"></audio>
+          <hr/>
+        `;
+        container.appendChild(div);
+      });
+    }
+  
+    window.addEventListener("load", showFavorites);
+  </script>
+  
+  <div id="track-list"></div>
+
+  <script>
+    async function loadAlbumTracks() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const albumId = urlParams.get('id');
+      if (!albumId) return;
+
+      const res = await fetch(`/albums/${albumId}`);
+      const tracks = await res.json();
+      const container = document.getElementById("track-list");
+      container.innerHTML = ""; // Очистка
+
+      tracks.forEach(track => {
+        const div = document.createElement("div");
+        div.className = "track";
+        div.innerHTML = `
+          <div class="track-info">
+            <img src="${track.cover}" alt="cover">
+            <div>
+              <strong>${track.title}</strong><br>
+              <span>${track.artist}</span>
+            </div>
+          </div>
+          <audio src="${track.audio_url}" controls></audio>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    loadAlbumTracks();
+  </script>
+</body>
+</html>
